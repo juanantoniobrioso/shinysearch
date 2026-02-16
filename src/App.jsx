@@ -1,24 +1,21 @@
-import { useState, useEffect } from 'react';
-import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-// --- ZONA DE IMPORTS (Aquí estaba el fallo) ---
 import Home from './pages/Home';
-import Header from './Header/Header'; 
-import Footer from './Footer/Footer'; 
-// ----------------------------------------------
+import Hunt from './pages/Hunt';
+import Biblioteca from './pages/Biblioteca'; // Asegúrate de que el archivo se llame Biblioteca.jsx
+import Login from './pages/Login';
+import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
-      {/* Si Header no está importado arriba, esto da pantalla blanca */}
-      <Header /> 
-      
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
+        <Route path="/hunt/:gameId" element={<Hunt />} />
+        
+        {/* Aquí definimos que la URL es /biblioteca */}
+        <Route path="/biblioteca" element={<Biblioteca />} />
       </Routes>
-
-      <Footer />
     </BrowserRouter>
   );
 }

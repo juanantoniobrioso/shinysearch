@@ -1,81 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+// IMPORTANTE: Aquí faltaba 'useNavigate' en tu código anterior
+import { Link, useNavigate } from 'react-router-dom'; 
 
-function Home() {
-  // 1. Guardamos los datos del Pokémon recibido de la API
-  const [pokemon, setPokemon] = useState(null);
-  
-  // 2. Guardamos lo que el usuario escribe en el input
-  const [pokemonBuscado, setPokemonBuscado] = useState('pikachu'); // Valor inicial
+const games = [
+  { id: 'fire-red', name: 'Rojo Fuego', gen: 3, baseOdds: 8192 },
+  { id: 'heart-gold', name: 'HeartGold', gen: 4, baseOdds: 8192 },
+  { id: 'black', name: 'Negro', gen: 5, baseOdds: 8192 },
+  { id: 'xy', name: 'X / Y', gen: 6, baseOdds: 4096 },
+  { id: 'sword', name: 'Espada', gen: 8, baseOdds: 4096 },
+  { id: 'scarlet', name: 'Escarlata', gen: 9, baseOdds: 4096 },
+];
 
-  // Función que busca el Pokémon (Se usa al inicio y al pulsar el botón)
-  const buscarPokemon = async () => {
-    if (!pokemonBuscado) return;
+const Home = () => {
+  const navigate = useNavigate(); // Esto fallaba porque no estaba importado arriba
+  const [user, setUser] = useState('');
 
-    try {
-      // Convertimos a minúsculas porque la API falla con mayúsculas
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonBuscado.toLowerCase()}`);
-      
-      if (!response.ok) {
-        alert("Pokémon no encontrado");
-        return;
-      }
-
-      const data = await response.json();
-      setPokemon(data); // Guardamos el pokémon encontrado
-    } catch (error) {
-      console.error("Error:", error);
+  useEffect(() => {
+    const activeUser = localStorage.getItem('USUARIO_ACTIVO');
+    if (!activeUser) {
+      navigate('/login');
+    } else {
+      setUser(activeUser);
     }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('USUARIO_ACTIVO');
+    navigate('/login');
   };
 
-  // Cargar un pokémon nada más entrar (usando el valor inicial)
-  useEffect(() => {
-    buscarPokemon();
-  }, []); 
-
   return (
-    <div className="container mt-5 text-center">
-      <h1>Mi Colección Shiny ✨</h1>
+    <div style={{ textAlign: 'center', padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', marginBottom: '20px' }}>
+        <h2>Hola, <span style={{color: '#FFD700', textTransform: 'capitalize'}}>{user}</span></h2>
+        <button onClick={handleLogout} style={{background: '#d32f2f', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>Cerrar Sesión</button>
+      </div>
       
-      {/* GRUPO DE BÚSQUEDA */}
-      <div className="d-flex justify-content-center gap-2 w-50 mx-auto my-3">
-        <input 
-          type="text" 
-          className="form-control"
-          placeholder="Escribe un pokémon" 
-          value={pokemonBuscado} // Conectado al estado
-          onChange={(e) => setPokemonBuscado(e.target.value)} // Actualiza el estado al escribir
-        />
-        <button 
-          className="btn btn-primary" 
-          onClick={buscarPokemon} // Llama a la API al hacer clic
-        >
-          Buscar
-        </button>
+      <h1>Selecciona tu Juego</h1>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        {games.map(game => (
+          <Link key={game.id} to={`/hunt/${game.id}`} state={{ gameData: game }} style={{ textDecoration: 'none' }}>
+            <div style={{ 
+              border: '1px solid #444', padding: '20px', borderRadius: '10px', 
+              background: '#2a2a2a', color: 'white', cursor: 'pointer' 
+            }}>
+              <h3>{game.name}</h3>
+              <p style={{ fontSize: '0.8rem', color: '#aaa' }}>Gen {game.gen}</p>
+            </div>
+          </Link>
+        ))}
       </div>
 
-      {/* TARJETA DEL POKÉMON */}
-      {pokemon ? (
-        <div className="card mx-auto shadow" style={{width: '18rem'}}>
-          <div className="card-body">
-            <h2 className="card-title text-uppercase">{pokemon.name}</h2>
-            <img 
-              src={pokemon.sprites.front_shiny} 
-              alt={pokemon.name} 
-              className="img-fluid"
-              style={{ width: '150px', filter: 'drop-shadow(0 0 10px gold)' }}
-            />
-            <p className="card-text mt-2 fw-bold">ID: #{pokemon.id}</p>
-            {/* Mostramos el tipo */}
-            <span className="badge bg-success">
-               {pokemon.types[0].type.name}
-            </span>
-          </div>
-        </div>
-      ) : (
-        <p>Cargando datos...</p>
-      )}
+      <div style={{ marginTop: '50px' }}>
+        {/* OJO: Aquí he cambiado /library por /biblioteca */}
+        <Link to="/biblioteca">
+          <button style={{ padding: '15px 30px', background: '#FFD700', color: 'black', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+            🏆 Ver Biblioteca Shiny
+          </button>
+        </Link>
+      </div>
     </div>
   );
-}
+};
 
 export default Home;
