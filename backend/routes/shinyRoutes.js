@@ -45,4 +45,15 @@ router.get('/collection/:userId', async (req, res) => {
   }
 });
 
+// --- RUTA 3: BORRAR (DELETE) ---
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    // Buscamos por ID y lo borramos de un golpe
+    await Shiny.findByIdAndDelete(req.params.id);
+    res.status(200).json("El Shiny ha sido liberado (borrado)");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 module.exports = router;
