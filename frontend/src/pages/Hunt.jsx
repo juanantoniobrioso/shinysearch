@@ -7,11 +7,12 @@ const Hunt = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Datos del juego (con valores por defecto por seguridad)
+  // Datos del juego
   const gameData = location.state?.gameData || { name: 'Juego', gen: 9, baseOdds: 4096 };
 
   const [targetPokemon, setTargetPokemon] = useState(null);
   const [count, setCount] = useState(0);
+  const [saving, setSaving] = useState(false); // Nuevo estado para evitar doble clic
 
   // Seleccionar Pokémon del buscador
   const handleSelectPokemon = async (p) => {
@@ -30,39 +31,55 @@ const Hunt = () => {
     }
   };
 
-  // Guardar y Terminar
-  const handleFinish = () => {
+  // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
+  const handleFinish = async () => {
     if (!targetPokemon) return;
 
-    // 1. OBTENEMOS EL USUARIO
-  const activeUser = localStorage.getItem('USUARIO_ACTIVO');
-  if (!activeUser) {
-    navigate('/login');
-    return;
-  }
+    // 1. Obtener usuario (ahora parseamos el JSON correctamente)
+    const userString = localStorage.getItem('USUARIO_ACTIVO');
+    if (!userString) {
+      navigate('/login');
+      return;
+    }
+    const user = JSON.parse(userString); // Convertimos texto a Objeto para sacar la ID
 
-  // 2. CREAMOS UNA LLAVE ÚNICA PARA ESTE USUARIO
-  const userKey = `COLECCION_${activeUser.toUpperCase()}`; // Ejemplo: COLECCION_ASH
+    setSaving(true); // Bloqueamos el botón para que no le den 2 veces
 
-  const newShiny = {
-    // ... (esto sigue igual: id, pokemonName, attempts, etc.) ...
-     id: Date.now(), 
-     pokemonName: targetPokemon.name,
-     sprite: targetPokemon.sprite,
-     attempts: count,
-     game: gameData.name,
-     date: new Date().toLocaleDateString()
-  };
+    try {
+      // 2. ENVIAR A TU SERVIDOR (BACKEND)
+      console.log("Enviando datos...", { user }); // Esto nos ayudará a ver qué pasa en la consola (F12)
 
-  // 3. USAMOS ESA LLAVE PERSONALIZADA
-  const storedData = localStorage.getItem(userKey);
-  const existingBiblioteca = storedData ? JSON.parse(storedData) : [];
-  
-  existingBiblioteca.push(newShiny);
-  
-  localStorage.setItem(userKey, JSON.stringify(existingBiblioteca));
+      const response = await fetch('http://localhost:5000/api/shiny/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          pokemonName: targetPokemon.name,
+          game: gameData.name,
+          attempts: count,
+          sprite: targetPokemon.sprite, // Asegúrate de enviar el sprite también
+          // --- AQUÍ ESTÁ EL CAMBIO ---
+          userId: user.Id || user.id || user._id // Probamos todas las opciones para no fallar
+          // ---------------------------
+        })
+      });
 
-    navigate('/biblioteca');
+      if (response.ok) {
+        console.log("¡Guardado en la nube!");
+        navigate('/biblioteca'); 
+      } else {
+        // Vamos a pedirle al servidor que nos diga EXACTAMENTE qué falló
+        const errorData = await response.json();
+        alert(`El servidor dice: ${errorData.message}`); // <--- Esto te dirá el error real
+        setSaving(false);
+      }
+
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      alert("Error de conexión con el servidor.");
+      setSaving(false);
+    }
   };
 
   return (
@@ -132,21 +149,23 @@ const Hunt = () => {
 
               <button 
                 onClick={handleFinish}
+                disabled={saving} // Se desactiva mientras guarda
                 style={{ 
                   padding: '15px', 
-                  background: '#2196F3', 
+                  background: saving ? '#666' : '#2196F3', 
                   color: 'white', 
                   border: 'none', 
                   borderRadius: '10px', 
-                  cursor: 'pointer',
+                  cursor: saving ? 'wait' : 'pointer',
                   fontSize: '18px'
                 }}
               >
-                💾 Guardar en Biblioteca
+                {saving ? 'Guardando...' : '💾 Guardar en Biblioteca'}
               </button>
 
               <button 
                 onClick={() => setTargetPokemon(null)}
+                disabled={saving}
                 style={{ 
                   padding: '10px', 
                   background: 'transparent', 

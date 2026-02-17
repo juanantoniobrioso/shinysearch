@@ -13,14 +13,22 @@ const games = [
 
 const Home = () => {
   const navigate = useNavigate(); // Esto fallaba porque no estaba importado arriba
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState(() => {
+    const stringGuardado = localStorage.getItem('USUARIO_ACTIVO');
+    // Si existe, lo convertimos de texto a Objeto real. Si no, devolvemos null.
+    if (stringGuardado) {
+      return JSON.parse(stringGuardado);
+    }
+    return null;
+  });
 
   useEffect(() => {
-    const activeUser = localStorage.getItem('USUARIO_ACTIVO');
-    if (!activeUser) {
+    // Solo comprobamos si NO hay usuario para echarlo fuera.
+    // Si SÍ hay usuario, el useState de arriba ya se encargó de cargarlo.
+    const stringGuardado = localStorage.getItem('USUARIO_ACTIVO');
+    
+    if (!stringGuardado) {
       navigate('/login');
-    } else {
-      setUser(activeUser);
     }
   }, [navigate]);
 
@@ -32,7 +40,9 @@ const Home = () => {
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', marginBottom: '20px' }}>
-        <h2>Hola, <span style={{color: '#FFD700', textTransform: 'capitalize'}}>{user}</span></h2>
+        <h2>Hola, <span style={{color: '#FFD700', textTransform: 'capitalize'}}>
+        {user ? user.username : 'Entrenador'}
+        </span></h2>
         <button onClick={handleLogout} style={{background: '#d32f2f', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'}}>Cerrar Sesión</button>
       </div>
       
