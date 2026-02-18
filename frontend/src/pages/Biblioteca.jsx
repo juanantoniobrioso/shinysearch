@@ -4,10 +4,23 @@ import { Link, useNavigate } from 'react-router-dom';
 const Biblioteca = () => {
   const [shinies, setShinies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const gamesList = [
+    "Oro", "Plata", "Cristal",
+    "Rubí", "Zafiro", "Esmeralda", "Rojo Fuego", "Verde Hoja",
+    "Diamante", "Perla", "Platino", "HeartGold", "SoulSilver",
+    "Blanco", "Negro", "Blanco 2", "Negro 2",
+    "X", "Y", "Rubí Omega", "Zafiro Alfa",
+    "Sol", "Luna", "Ultra Sol", "Ultra Luna",
+    "Espada", "Escudo", "Diamante Brillante", "Perla Reluciente",
+    "Escarlata", "Púrpura"
+  ];
   const navigate = useNavigate();
 
+  // --- ESTADO PARA LA EDICIÓN (NUEVO) ---
+  const [editingShiny, setEditingShiny] = useState(null); // Guarda el shiny que estamos editando
+  const [editForm, setEditForm] = useState({ attempts: 0, game: '' }); // Guarda los datos del formulario
+
   useEffect(() => {
-    // 1. OBTENER USUARIO
     const userString = localStorage.getItem('USUARIO_ACTIVO');
     if (!userString) {
       navigate('/login');
@@ -15,123 +28,124 @@ const Biblioteca = () => {
     }
     const user = JSON.parse(userString);
 
-    // 2. PEDIR DATOS
     const fetchShinies = async () => {
       try {
-        const userId = user.Id || user.id || user._id; // Nos aseguramos de pillar la ID
+        const userId = user.Id || user.id || user._id;
         const response = await fetch(`http://localhost:5000/api/shiny/collection/${userId}`);
-        
         if (response.ok) {
           const data = await response.json();
           setShinies(data);
         }
       } catch (error) {
-        console.error("Error de conexión:", error);
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchShinies();
   }, [navigate]);
 
-  // --- NUEVA FUNCIÓN PARA BORRAR ---
   const handleDelete = async (id) => {
-    // Preguntamos primero para no borrar por error
-    if (!window.confirm("¿Seguro que quieres liberar (borrar) este Shiny?")) return;
-
+    if (!window.confirm("¿Seguro que quieres liberar este Shiny?")) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/shiny/delete/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:5000/api/shiny/delete/${id}`, { method: 'DELETE' });
+      if (response.ok) setShinies(shinies.filter((s) => s._id !== id));
+    } catch (error) { console.error(error); }
+  };
+
+  // --- FUNCIONES DE EDICIÓN (NUEVO) ---
+  const openEditModal = (shiny) => {
+    setEditingShiny(shiny);
+    setEditForm({ attempts: shiny.attempts, game: shiny.game });
+  };
+
+  const closeEditModal = () => {
+    setEditingShiny(null);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/shiny/update/${editingShiny._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
       });
 
       if (response.ok) {
-        // Truco visual: Filtramos la lista localmente para que desaparezca al instante
-        // sin tener que recargar la página
-        setShinies(shinies.filter((shiny) => shiny._id !== id));
+        const updatedShiny = await response.json();
+        
+        // Actualizamos la lista localmente para ver el cambio al instante
+        setShinies(shinies.map(s => (s._id === updatedShiny._id ? updatedShiny : s)));
+        closeEditModal();
       } else {
-        alert("Error al borrar");
+        alert("Error al actualizar");
       }
     } catch (error) {
-      console.error("Error al borrar:", error);
+      console.error(error);
+      alert("Error de conexión");
     }
   };
 
   return (
-    <div style={{ padding: '20px', textAlign: 'center', color: 'white' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <Link to="/" style={{ color: '#aaa', textDecoration: 'none' }}>← Volver a Inicio</Link>
-        <h2 style={{ margin: 0 }}>Mi Colección Shiny ✨</h2>
-        <div style={{ width: '80px' }}></div>
-      </div>
+    <div className="app-container">
+      
+      {/* HEADER */}
+      <header className="header-bar">
+        <Link to="/" className="btn btn-back">
+          ← Volver a Inicio
+        </Link>
+        <h2 style={{margin: 0}}>Mi Colección ✨</h2>
+        <div style={{width: '100px'}}></div>
+      </header>
 
       {loading ? (
-        <p>Cargando colección...</p>
+        <p>Cargando datos...</p>
       ) : shinies.length === 0 ? (
-        <div style={{ marginTop: '50px', color: '#aaa' }}>
+        <div className="empty-state">
           <h3>Aún no tienes capturas</h3>
           <p>¡Ve a cazar tu primer shiny!</p>
+          <br/>
           <Link to="/">
-            <button style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>Ir a Cazar</button>
+            <button className="btn btn-primary">Ir a Cazar</button>
           </Link>
         </div>
       ) : (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-          gap: '20px',
-          maxWidth: '1000px',
-          margin: '0 auto'
-        }}>
+        /* GRILLA DE SHINIES */
+        <div className="library-grid">
           {shinies.map((shiny) => (
-            <div key={shiny._id} style={{ 
-              background: '#2a2a2a', 
-              borderRadius: '15px', 
-              padding: '15px',
-              border: '1px solid #444',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-              position: 'relative' // Necesario para colocar el botón de borrar
-            }}>
+            <div key={shiny._id} className="shiny-card">
               
-              {/* --- BOTÓN DE BORRAR (X) --- */}
+              {/* BOTÓN BORRAR (X) */}
               <button 
+                className="btn-circle btn-delete"
                 onClick={() => handleDelete(shiny._id)}
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                  background: '#ff4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '25px',
-                  height: '25px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                title="Borrar Shiny"
+                title="Borrar"
               >
                 ×
               </button>
 
-              <div style={{ fontSize: '0.7rem', color: '#888', position: 'absolute', top: '10px', left: '15px' }}>
+              {/* BOTÓN EDITAR (LÁPIZ) - NUEVO */}
+              <button 
+                className="btn-circle btn-edit"
+                onClick={() => openEditModal(shiny)}
+                title="Editar"
+              >
+                ✎
+              </button>
+
+              <div className="shiny-date">
                 {new Date(shiny.date).toLocaleDateString()}
               </div>
 
               <img 
                 src={shiny.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/1.png`} 
                 alt={shiny.pokemonName}
-                style={{ width: '100px', height: '100px', objectFit: 'contain', marginTop: '10px' }} 
+                className="shiny-sprite" 
               />
               
-              <h3 style={{ margin: '10px 0', textTransform: 'capitalize', color: '#FFD700' }}>
-                {shiny.pokemonName}
-              </h3>
+              <h3 className="shiny-name">{shiny.pokemonName}</h3>
               
-              <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.9rem', color: '#ccc' }}>
+              <div className="shiny-stats">
                 <span>🎮 {shiny.game}</span>
                 <span>🎲 {shiny.attempts}</span>
               </div>
@@ -139,6 +153,58 @@ const Biblioteca = () => {
           ))}
         </div>
       )}
+
+      {/* --- MODAL DE EDICIÓN (NUEVO) --- */}
+      {editingShiny && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar {editingShiny.pokemonName}</h3>
+            
+            <label>Número de Intentos:</label>
+            <input 
+              type="number" 
+              min="0" // 1. Bloqueo visual (flechitas)
+              className="search-input"
+              style={{ marginBottom: '15px' }}
+              value={editForm.attempts}
+              onChange={(e) => {
+                // 2. Bloqueo lógico (no deja escribir negativos)
+                const val = e.target.value;
+                if (val >= 0) { 
+                  setEditForm({...editForm, attempts: val});
+                }
+              }}
+              // 3. Bloqueo extra: Previene escribir signos 'e', '+', '-'
+              onKeyDown={(e) => {
+                if (["e", "E", "+", "-"].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+
+            <label>Juego:</label>
+            {/* CAMBIO: Usamos SELECT en vez de INPUT */}
+            <select 
+              className="search-input" // Reusamos la clase para que se vea igual
+              style={{ marginBottom: '20px', cursor: 'pointer' }}
+              value={editForm.game}
+              onChange={(e) => setEditForm({...editForm, game: e.target.value})}
+            >
+              {gamesList.map((gameName) => (
+                <option key={gameName} value={gameName}>
+                  {gameName}
+                </option>
+              ))}
+            </select>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-danger" onClick={closeEditModal}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleUpdate}>Guardar Cambios</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

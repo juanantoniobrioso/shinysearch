@@ -5,48 +5,57 @@ const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // --- LISTA MAESTRA DE JUEGOS ---
+  // LISTA DE JUEGOS CON EL ID DEL LEGENDARIO DE PORTADA
   const games = [
-    // GEN 2
-    { name: "Oro", gen: 2, slug: "gold" },
-    { name: "Plata", gen: 2, slug: "silver" },
-    { name: "Cristal", gen: 2, slug: "crystal" },
-    // GEN 3
-    { name: "Rubí", gen: 3, slug: "ruby" },
-    { name: "Zafiro", gen: 3, slug: "sapphire" },
-    { name: "Esmeralda", gen: 3, slug: "emerald" },
-    { name: "Rojo Fuego", gen: 3, slug: "fire-red" },
-    { name: "Verde Hoja", gen: 3, slug: "leaf-green" },
-    // GEN 4
-    { name: "Diamante", gen: 4, slug: "diamond" },
-    { name: "Perla", gen: 4, slug: "pearl" },
-    { name: "Platino", gen: 4, slug: "platinum" },
-    { name: "HeartGold", gen: 4, slug: "heartgold" },
-    { name: "SoulSilver", gen: 4, slug: "soulsilver" },
-    // GEN 5
-    { name: "Blanco", gen: 5, slug: "white" },
-    { name: "Negro", gen: 5, slug: "black" },
-    { name: "Blanco 2", gen: 5, slug: "white-2" },
-    { name: "Negro 2", gen: 5, slug: "black-2" },
-    // GEN 6
-    { name: "X", gen: 6, slug: "x" },
-    { name: "Y", gen: 6, slug: "y" },
-    { name: "Rubí Omega", gen: 6, slug: "omega-ruby" },
-    { name: "Zafiro Alfa", gen: 6, slug: "alpha-sapphire" },
-    // GEN 7
-    { name: "Sol", gen: 7, slug: "sun" },
-    { name: "Luna", gen: 7, slug: "moon" },
-    { name: "Ultra Sol", gen: 7, slug: "ultra-sun" },
-    { name: "Ultra Luna", gen: 7, slug: "ultra-moon" },
-    // GEN 8
-    { name: "Espada", gen: 8, slug: "sword" },
-    { name: "Escudo", gen: 8, slug: "shield" },
-    { name: "Diamante Brillante", gen: 8, slug: "brilliant-diamond" },
-    { name: "Perla Reluciente", gen: 8, slug: "shining-pearl" },
-    // GEN 9
-    { name: "Escarlata", gen: 9, slug: "scarlet" },
-    { name: "Púrpura", gen: 9, slug: "violet" },
+    // GEN 2 (Ho-Oh, Lugia, Suicune)
+    { name: "Oro", gen: 2, slug: "gold", id: 250 },
+    { name: "Plata", gen: 2, slug: "silver", id: 249 },
+    { name: "Cristal", gen: 2, slug: "crystal", id: 245 },
+    
+    // GEN 3 (Groudon, Kyogre, Rayquaza, Charizard, Venusaur)
+    { name: "Rubí", gen: 3, slug: "ruby", id: 383 },
+    { name: "Zafiro", gen: 3, slug: "sapphire", id: 382 },
+    { name: "Esmeralda", gen: 3, slug: "emerald", id: 384 },
+    { name: "Rojo Fuego", gen: 3, slug: "fire-red", id: 6 },
+    { name: "Verde Hoja", gen: 3, slug: "leaf-green", id: 3 },
+    
+    // GEN 4 (Dialga, Palkia, Giratina, Ho-Oh, Lugia)
+    { name: "Diamante", gen: 4, slug: "diamond", id: 483 },
+    { name: "Perla", gen: 4, slug: "pearl", id: 484 },
+    { name: "Platino", gen: 4, slug: "platinum", id: 487 },
+    { name: "HeartGold", gen: 4, slug: "heartgold", id: 250 },
+    { name: "SoulSilver", gen: 4, slug: "soulsilver", id: 249 },
+    
+    // GEN 5 (Reshiram, Zekrom, Kyurem Blanco, Kyurem Negro)
+    { name: "Blanco", gen: 5, slug: "white", id: 644 },
+    { name: "Negro", gen: 5, slug: "black", id: 643 },
+    { name: "Blanco 2", gen: 5, slug: "white-2", id: 10023 }, // Kyurem Blanco
+    { name: "Negro 2", gen: 5, slug: "black-2", id: 10022 }, // Kyurem Negro
+    
+    // GEN 6 (Xerneas, Yveltal, Groudon Primigenio, Kyogre Primigenio)
+    { name: "X", gen: 6, slug: "x", id: 716 },
+    { name: "Y", gen: 6, slug: "y", id: 717 },
+    { name: "Rubí Omega", gen: 6, slug: "omega-ruby", id: 10078 }, // Primal Groudon
+    { name: "Zafiro Alfa", gen: 6, slug: "alpha-sapphire", id: 10077 }, // Primal Kyogre
+    
+    // GEN 7 (Solgaleo, Lunala, Necrozma Melena, Necrozma Alas)
+    { name: "Sol", gen: 7, slug: "sun", id: 791 },
+    { name: "Luna", gen: 7, slug: "moon", id: 792 },
+    { name: "Ultra Sol", gen: 7, slug: "ultra-sun", id: 10155 }, // Dusk Mane
+    { name: "Ultra Luna", gen: 7, slug: "ultra-moon", id: 10156 }, // Dawn Wings
+    
+    // GEN 8 (Zacian, Zamazenta, Dialga, Palkia)
+    { name: "Espada", gen: 8, slug: "sword", id: 888 },
+    { name: "Escudo", gen: 8, slug: "shield", id: 889 },
+    { name: "Diamante Brillante", gen: 8, slug: "brilliant-diamond", id: 483 },
+    { name: "Perla Reluciente", gen: 8, slug: "shining-pearl", id: 484 },
+    
+    // GEN 9 (Koraidon, Miraidon)
+    { name: "Escarlata", gen: 9, slug: "scarlet", id: 1007 },
+    { name: "Púrpura", gen: 9, slug: "violet", id: 1008 },
   ];
+
+  const generaciones = [...new Set(games.map(game => game.gen))];
 
   useEffect(() => {
     const userString = localStorage.getItem('USUARIO_ACTIVO');
@@ -62,76 +71,53 @@ const Home = () => {
     navigate('/login');
   };
 
-  const handleGameSelect = (gameSlug, gameName) => {
-    // Enviamos tanto el slug (para la URL) como el nombre bonito (para mostrar)
-    navigate(`/hunt/${gameSlug}`, { state: { gameName } });
-  };
-
   return (
-    <div style={{ padding: '20px', textAlign: 'center', color: 'white' }}>
-      
-      {/* CABECERA */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h2>Hola, <span style={{ color: '#FFD700' }}>{user?.Username}</span></h2>
-        <button onClick={handleLogout} style={{ background: '#dc3545', padding: '8px 15px', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+    <div className="app-container">
+      {/* HEADER */}
+      <header className="header-bar">
+        {/* AQUÍ ESTÁ EL ARREGLO DEL NOMBRE (username en minúscula) */}
+        <h3>Entrenador <span className="username-highlight">{user?.username || user?.Username}</span></h3>
+        <button onClick={handleLogout} className="btn btn-danger">
           Cerrar Sesión
+        </button>
+      </header>
+      <div style={{ textAlign: 'center' }}>
+        <button onClick={() => navigate('/biblioteca')} className="btn btn-primary">
+          Biblioteca 
         </button>
       </div>
 
-      <h1>Selecciona tu Juego</h1>
+      <h1 className="title-main">Selecciona juego</h1>
+      <p className="subtitle">Elige tu aventura para comenzar la caza</p>
 
-      {/* GRILLA DE JUEGOS */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', // Hace que los botones se adapten al tamaño
-        gap: '15px',
-        marginTop: '30px',
-        maxWidth: '1000px',
-        margin: '30px auto'
-      }}>
-        {games.map((game) => (
-          <button 
-            key={game.slug}
-            onClick={() => handleGameSelect(game.slug, game.name)}
-            style={{
-              padding: '20px 10px',
-              background: '#2a2a2a',
-              border: '1px solid #444',
-              borderRadius: '10px',
-              color: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.2s',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{game.name}</span>
-            <span style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Gen {game.gen}</span>
-          </button>
+      <div style={{ paddingBottom: '50px' }}>
+        {generaciones.map((gen) => (
+          <div key={gen} className="gen-section">
+            <h2 className="gen-title">Generación {gen}</h2>
+            <div className="games-grid">
+              {games
+                .filter(game => game.gen === gen)
+                .map((game) => (
+                  <button 
+                    key={game.slug}
+                    className="game-card"
+                    onClick={() => navigate(`/hunt/${game.slug}`, { state: { gameName: game.name, gen: game.gen } })}
+                  >
+                    {/* IMAGEN DEL LEGENDARIO */}
+                    <img 
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${game.id}.png`}
+                      alt={game.name}
+                      className="game-cover-sprite"
+                    />
+                    <span className="game-name">{game.name}</span>
+                  </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
-      <button 
-        onClick={() => navigate('/biblioteca')}
-        style={{ 
-          marginTop: '40px', 
-          padding: '15px 30px', 
-          background: '#FFD700', 
-          color: 'black', 
-          border: 'none', 
-          borderRadius: '30px', 
-          fontSize: '1.2rem', 
-          fontWeight: 'bold', 
-          cursor: 'pointer' 
-        }}
-      >
-        🏆 Ver Biblioteca Shiny
-      </button>
+      
     </div>
   );
 };

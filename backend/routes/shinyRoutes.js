@@ -56,4 +56,27 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
+// --- RUTA 4: EDITAR ---
+router.put('/update/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { attempts, game, notes } = req.body; // Lo que permitimos editar
+
+    // Buscamos por ID y actualizamos
+    const updatedShiny = await Shiny.findByIdAndUpdate(
+      id,
+      { attempts, game, notes }, // Campos a actualizar
+      { new: true } // Esto hace que nos devuelva el objeto ya cambiado
+    );
+
+    if (!updatedShiny) {
+      return res.status(404).json({ message: "Shiny no encontrado" });
+    }
+
+    res.json(updatedShiny);
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar" });
+  }
+});
+
 module.exports = router;
