@@ -22,4 +22,19 @@ const getNotesByShiny = async (req, res) => {
   }
 };
 
-module.exports = { addNote, getNotesByShiny };
+// Función para borrar una nota
+const deleteNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Note.findByIdAndDelete(id);
+    res.json({ message: "Nota eliminada" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al borrar la nota" });
+  }
+};
+
+module.exports = { 
+    addNote, 
+    getNotesByShiny,
+    deleteNote
+};
