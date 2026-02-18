@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const Biblioteca = () => {
   const [shinies, setShinies] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Juegos
   const gamesList = [
     "Oro", "Plata", "Cristal",
     "Rubí", "Zafiro", "Esmeralda", "Rojo Fuego", "Verde Hoja",
@@ -14,6 +15,12 @@ const Biblioteca = () => {
     "Espada", "Escudo", "Diamante Brillante", "Perla Reluciente",
     "Escarlata", "Púrpura"
   ];
+
+  //Notas para cada shiny
+  const [selectedShinyForNotes, setSelectedShinyForNotes] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [newNoteText, setNewNoteText] = useState("");
+
   const navigate = useNavigate();
 
   // --- ESTADO PARA LA EDICIÓN (NUEVO) ---
@@ -86,6 +93,39 @@ const Biblioteca = () => {
     }
   };
 
+  //FUNCIONES DE NOTAS
+  const openNoteModal = (shiny) => {
+    fetchNotes(shiny._id); // Esto carga las notas y abre el modal
+  };
+  const fetchNotes = async (shinyId) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/notes/${shinyId}`);
+    const data = await response.json();
+    setNotes(data);
+    setSelectedShinyForNotes(shinyId);
+  } catch (error) {
+    console.error("Error al cargar notas");
+  }
+};
+
+  const handleAddNote = async () => {
+    if (!newNoteText.trim()) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/notes/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shinyId: selectedShinyForNotes, text: newNoteText })
+      });
+      if (response.ok) {
+        const savedNote = await response.json();
+        setNotes([...notes, savedNote]); // Actualizar lista
+        setNewNoteText(""); // Limpiar input
+      }
+    } catch (error) {
+      console.error("Error al guardar nota");
+    }
+  };
+
   return (
     <div className="app-container">
       
@@ -149,10 +189,75 @@ const Biblioteca = () => {
                 <span>🎮 {shiny.game}</span>
                 <span>🎲 {shiny.attempts}</span>
               </div>
+              
+              {/*---Boton añadir notas */}
+              <button 
+                className="btn btn-primary" // Botón normal, no circular
+                style={{ width: '100%', marginTop: '10px', fontSize: '0.8rem' }}
+                onClick={() => openNoteModal(shiny)}
+                title="Ver notas"
+              >
+                Ver Notas / Detalle
+              </button>
             </div>
           ))}
         </div>
       )}
+
+      {/*--- Editar notas --- */}
+      {selectedShinyForNotes && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>Notas del Pokémon</h3>
+      <div className="notes-list" style={{maxHeight: '200px', overflowY: 'auto', marginBottom: '15px'}}>
+        {notes.length === 0 ? <p>No hay notas aún.</p> : notes.map(n => (
+          <div className="notes-list" style={{
+  maxHeight: '200px', 
+  overflowY: 'auto', 
+  marginBottom: '15px',
+  padding: '10px',
+  backgroundColor: '#1a1a1a', // Fondo más oscuro para contrastar
+  borderRadius: '8px'
+}}>
+  {notes.length === 0 ? (
+    <p style={{ color: '#888', textAlign: 'center' }}>No hay notas aún.</p>
+  ) : (
+    notes.map(n => (
+      <div key={n._id} style={{
+        backgroundColor: '#333', // Caja para cada nota
+        color: '#fff',           // Texto blanco puro para lectura perfecta
+        padding: '12px',
+        borderRadius: '6px',
+        marginBottom: '10px',
+        fontSize: '0.9rem',
+        borderLeft: '4px solid #ffcb05', // Detalle amarillo Pokémon
+        textAlign: 'left',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+      }}>
+        <div style={{ marginBottom: '5px' }}>{n.text}</div>
+        <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
+          📅 {new Date(n.date).toLocaleDateString()}
+        </div>
+      </div>
+    ))
+  )}
+</div>
+        ))}
+      </div>
+      <input 
+        type="text" 
+        className="search-input" 
+        placeholder="Escribe una nota..."
+        value={newNoteText}
+        onChange={(e) => setNewNoteText(e.target.value)}
+      />
+      <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+        <button className="btn btn-primary" onClick={handleAddNote}>Añadir</button>
+        <button className="btn btn-danger" onClick={() => setSelectedShinyForNotes(null)}>Cerrar</button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* --- MODAL DE EDICIÓN (NUEVO) --- */}
       {editingShiny && (

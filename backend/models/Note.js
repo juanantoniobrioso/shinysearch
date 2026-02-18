@@ -1,0 +1,19 @@
+const mongoose = require('mongoose');
+
+const NoteSchema = new mongoose.Schema({
+  shinyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Shiny', // Relación con la colección de Shinies
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model('Note', NoteSchema);

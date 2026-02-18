@@ -6,6 +6,7 @@ require('dotenv').config();
 // Importar rutas
 const authRoutes = require('./routes/auth');
 const shinyRoutes = require('./routes/shinyRoutes'); // <--- Tu nueva ruta
+const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json()); // Permite leer JSON
 // --- RUTAS ---
 app.use('/api/auth', authRoutes);
 app.use('/api/shiny', shinyRoutes);
+app.use('/api/notes', noteRoutes);
 
 // --- CONEXIÓN BASE DE DATOS ---
 mongoose.connect(process.env.MONGO_URI)
