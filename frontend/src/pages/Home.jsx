@@ -72,17 +72,26 @@ const Home = () => {
   };
 
   return (
+    <div style={{
+  minHeight: '100vh',
+  background: 'radial-gradient(circle at top, #464a20 0%, #34204a 100%)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px'
+    }}>
     <div className="app-container">
       {/* HEADER */}
       <header className="header-bar">
         {/* AQUÍ ESTÁ EL ARREGLO DEL NOMBRE (username en minúscula) */}
         <h3>Entrenador <span className="username-highlight">{user?.username || user?.Username}</span></h3>
-        <button onClick={handleLogout} className="btn btn-danger">
+        <button onClick={handleLogout} className="btn-custom btn-poke-red">
           Cerrar Sesión
         </button>
       </header>
       <div style={{ textAlign: 'center' }}>
-        <button onClick={() => navigate('/biblioteca')} className="btn btn-primary">
+        <button onClick={() => navigate('/biblioteca')} className="btn-custom btn-poke-blue">
           Biblioteca 
         </button>
       </div>
@@ -118,6 +127,7 @@ const Home = () => {
       </div>
 
       
+    </div>
     </div>
   );
 };

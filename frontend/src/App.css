@@ -60,7 +60,7 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #4a4a4a;
+  background-color: #808f78;
   padding: 15px 30px;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -85,6 +85,7 @@ a { text-decoration: none; color: inherit; }
   font-size: 2.5rem;
   margin-bottom: 10px;
   text-align: center;
+  color: #FFFFFF
 }
 
 .subtitle {
@@ -132,6 +133,85 @@ a { text-decoration: none; color: inherit; }
   padding: 0;
 }
 .btn-back:hover { color: var(--text-main); }
+
+/* Botón General (Base) */
+.btn-custom {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+/* Botón Estilo "Biblioteca" / Confirmar */
+.btn-poke-blue {
+  background-color: #3b4cca; /* Azul oficial Pokémon */
+  color: white;
+  box-shadow: 0 4px 0 #2a3a8c; /* Efecto 3D sutil */
+}
+
+.btn-poke-blue:hover {
+  background-color: #4a5ae0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #2a3a8c;
+}
+
+.btn-poke-blue:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #2a3a8c;
+}
+
+/* Botón Estilo "Cerrar Sesión" / Cancelar */
+.btn-poke-red {
+  background-color: #ee1515; /* Rojo Pokeball */
+  color: white;
+  box-shadow: 0 4px 0 #b31010;
+}
+
+.btn-poke-red:hover {
+  background-color: #ff3333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #b31010;
+}
+
+.btn-poke-red:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #b31010;
+}
+
+/* Botón Volver con estilo "Game Boy" */
+.btn-nav-retro {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #444; /* Gris oscuro neutro */
+  color: #fff;
+  border: 2px solid #555;
+  border-radius: 20px; /* Bordes redondeados tipo cápsula */
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 2px 2px 0px #222;
+}
+
+.btn-nav-retro:hover {
+  background-color: #ffcb05; /* Se vuelve amarillo al pasar el ratón */
+  color: #121212;
+  border-color: #b38f00;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #222;
+}
+
+.btn-nav-retro:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px #222;
+}
 
 /* --- GRIDS (MALLAS) --- */
 .games-grid {
@@ -204,11 +284,12 @@ a { text-decoration: none; color: inherit; }
 .shiny-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 15px;
   position: relative; 
   box-shadow: var(--shadow);
-  transition: transform 0.3s;
+  transition: transform 0.3s ease; 
+  box-shadow: 0.3s ease;
 }
 
 .shiny-card:hover {
@@ -288,6 +369,15 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* --- ESTILOS DE LA PÁGINA HUNT --- */
+
+.navbar {
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
 .search-wrapper {
   position: relative; 
   width: 100%;

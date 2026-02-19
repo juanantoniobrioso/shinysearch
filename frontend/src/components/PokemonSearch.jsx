@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 // Límites de la Pokédex Nacional por generación
 const GEN_LIMITS = {

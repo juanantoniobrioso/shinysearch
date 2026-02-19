@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home';
 import Hunt from './pages/Hunt';
 import Biblioteca from './pages/Biblioteca'; // Asegúrate de que el archivo se llame Biblioteca.jsx
@@ -16,7 +18,16 @@ function App() {
         {/* Aquí definimos que la URL es /biblioteca */}
         <Route path="/biblioteca" element={<Biblioteca />} />
       </Routes>
+      <div className="App">
+      {/* Tus rutas y componentes */}
+      <ToastContainer 
+        position="bottom-right" 
+        autoClose={3000} 
+        theme="dark" 
+      />
+      </div>
     </BrowserRouter>
+    
   );
 }
 

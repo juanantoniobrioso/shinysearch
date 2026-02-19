@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Biblioteca = () => {
   const [shinies, setShinies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmAction, setConfirmAction] = useState({ 
+  isOpen: false, 
+  title: "", 
+  onConfirm: null 
+  });
   // Juegos
   const gamesList = [
     "Oro", "Plata", "Cristal",
@@ -52,13 +58,29 @@ const Biblioteca = () => {
     fetchShinies();
   }, [navigate]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que quieres liberar este Shiny?")) return;
-    try {
-      const response = await fetch(`http://localhost:5000/api/shiny/delete/${id}`, { method: 'DELETE' });
-      if (response.ok) setShinies(shinies.filter((s) => s._id !== id));
-    } catch (error) { console.error(error); }
-  };
+const handleDelete = (shiny) => {
+  // Creamos el nombre con la primera letra en mayúscula
+  const formattedName = shiny.pokemonName.charAt(0).toUpperCase() + shiny.pokemonName.slice(1);
+
+  setConfirmAction({
+    isOpen: true,
+    title: `¿Liberar a ${formattedName}?`, // Ahora saldrá "Charmeleon"
+    onConfirm: async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/shiny/delete/${shiny._id}`, { 
+          method: 'DELETE' 
+        });
+        if (response.ok) {
+          setShinies(shinies.filter((s) => s._id !== shiny._id));
+          // También lo aplicamos al Toast de éxito
+          toast.info(`✨ ${formattedName} ha sido liberado correctamente`);
+        }
+      } catch (error) {
+        toast.error("Error al borrar");
+      }
+    }
+  });
+};
 
   // --- FUNCIONES DE EDICIÓN (NUEVO) ---
   const openEditModal = (shiny) => {
@@ -83,13 +105,14 @@ const Biblioteca = () => {
         
         // Actualizamos la lista localmente para ver el cambio al instante
         setShinies(shinies.map(s => (s._id === updatedShiny._id ? updatedShiny : s)));
+        toast.success("Cambios guardados correctamente");
         closeEditModal();
       } else {
-        alert("Error al actualizar");
+        toast.error("Error al actualizar");
       }
     } catch (error) {
       console.error(error);
-      alert("Error de conexión");
+      toast.error("Error de conexión");
     }
   };
 
@@ -126,12 +149,53 @@ const Biblioteca = () => {
     }
   };
 
+  const handleDeleteNote = (note) => {
+  // 1. Configuramos el modal de confirmación personalizado
+  setConfirmAction({
+    isOpen: true,
+    title: `¿Borrar la nota: "${note.text.substring(0, 15)}..."?`,
+    onConfirm: async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/notes/delete/${note._id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          // 2. Actualizamos el estado para que desaparezca de la lista
+          setNotes(prevNotes => prevNotes.filter(n => n._id !== note._id));
+          
+          // 3. Lanzamos el Toast con el contenido de la nota
+          const shortText = note.text.length > 20 
+            ? note.text.substring(0, 20) + "..." 
+            : note.text;
+            
+          toast.success(`🗑️ Nota eliminada: "${shortText}"`);
+        } else {
+          toast.error("No se pudo borrar la nota");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Error de conexión");
+      }
+    }
+  });
+};
+
   return (
+    <div style={{
+  minHeight: '100vh',
+  background: 'radial-gradient(circle at top, #464a20 0%, #34204a 100%)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px'
+    }}>
     <div className="app-container">
       
       {/* HEADER */}
       <header className="header-bar">
-        <Link to="/" className="btn btn-back">
+        <Link to="/" className="btn-nav-retro">
           ← Volver a Inicio
         </Link>
         <h2 style={{margin: 0}}>Mi Colección ✨</h2>
@@ -158,7 +222,7 @@ const Biblioteca = () => {
               {/* BOTÓN BORRAR (X) */}
               <button 
                 className="btn-circle btn-delete"
-                onClick={() => handleDelete(shiny._id)}
+                onClick={() => handleDelete(shiny)}
                 title="Borrar"
               >
                 ×
@@ -192,7 +256,7 @@ const Biblioteca = () => {
               
               {/*---Boton añadir notas */}
               <button 
-                className="btn btn-primary" // Botón normal, no circular
+                className="btn-custom btn-poke-blue" // Botón normal, no circular
                 style={{ width: '100%', marginTop: '10px', fontSize: '0.8rem' }}
                 onClick={() => openNoteModal(shiny)}
                 title="Ver notas"
@@ -209,41 +273,64 @@ const Biblioteca = () => {
   <div className="modal-overlay">
     <div className="modal-content">
       <h3>Notas del Pokémon</h3>
-      <div className="notes-list" style={{maxHeight: '200px', overflowY: 'auto', marginBottom: '15px'}}>
-        {notes.length === 0 ? <p>No hay notas aún.</p> : notes.map(n => (
-          <div className="notes-list" style={{
-  maxHeight: '200px', 
-  overflowY: 'auto', 
-  marginBottom: '15px',
-  padding: '10px',
-  backgroundColor: '#1a1a1a', // Fondo más oscuro para contrastar
-  borderRadius: '8px'
-}}>
-  {notes.length === 0 ? (
-    <p style={{ color: '#888', textAlign: 'center' }}>No hay notas aún.</p>
-  ) : (
-    notes.map(n => (
-      <div key={n._id} style={{
-        backgroundColor: '#333', // Caja para cada nota
-        color: '#fff',           // Texto blanco puro para lectura perfecta
-        padding: '12px',
-        borderRadius: '6px',
-        marginBottom: '10px',
-        fontSize: '0.9rem',
-        borderLeft: '4px solid #ffcb05', // Detalle amarillo Pokémon
-        textAlign: 'left',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+      
+      {/* Contenedor de la lista de notas */}
+      <div className="notes-list" style={{
+        maxHeight: '250px', 
+        overflowY: 'auto', 
+        marginBottom: '15px',
+        padding: '10px',
+        backgroundColor: '#1a1a1a', 
+        borderRadius: '8px'
       }}>
-        <div style={{ marginBottom: '5px' }}>{n.text}</div>
-        <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
-          📅 {new Date(n.date).toLocaleDateString()}
-        </div>
+        {notes.length === 0 ? (
+          <p style={{ color: '#888', textAlign: 'center' }}>No hay notas aún.</p>
+        ) : (
+          notes.map(n => (
+            <div key={n._id} style={{
+              backgroundColor: '#333',
+              color: '#fff',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '10px',
+              fontSize: '0.9rem',
+              borderLeft: '4px solid #ffcb05',
+              textAlign: 'left',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              position: 'relative'
+            }}>
+              
+              {/* BOTÓN BORRAR NOTA */}
+              <button 
+                onClick={() => handleDeleteNote(n)}
+                style={{
+                  position: 'absolute',
+                  top: '5px',
+                  right: '5px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#ff4757',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
+                  padding: '0 5px'
+                }}
+                title="Borrar nota"
+              >
+                ×
+              </button>
+
+              <div style={{ marginBottom: '5px', paddingRight: '20px' }}>
+                {n.text}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
+                📅 {new Date(n.date).toLocaleDateString()}
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    ))
-  )}
-</div>
-        ))}
-      </div>
+
+      {/* Input para añadir nueva nota */}
       <input 
         type="text" 
         className="search-input" 
@@ -251,9 +338,10 @@ const Biblioteca = () => {
         value={newNoteText}
         onChange={(e) => setNewNoteText(e.target.value)}
       />
+
       <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
-        <button className="btn btn-primary" onClick={handleAddNote}>Añadir</button>
-        <button className="btn btn-danger" onClick={() => setSelectedShinyForNotes(null)}>Cerrar</button>
+        <button className="btn-custom btn-poke-blue" onClick={handleAddNote}>Añadir</button>
+        <button className="btn-custom btn-poke-red" onClick={() => setSelectedShinyForNotes(null)}>Cerrar</button>
       </div>
     </div>
   </div>
@@ -261,8 +349,10 @@ const Biblioteca = () => {
 
       {/* --- MODAL DE EDICIÓN (NUEVO) --- */}
       {editingShiny && (
+        
         <div className="modal-overlay">
           <div className="modal-content">
+            
             <h3>Editar {editingShiny.pokemonName}</h3>
             
             <label>Número de Intentos:</label>
@@ -309,7 +399,25 @@ const Biblioteca = () => {
           </div>
         </div>
       )}
-
+      {confirmAction.isOpen && (
+  <div className="modal-overlay" style={{ zIndex: 10000 }}>
+    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '300px' }}>
+      <h3 style={{ marginBottom: '20px' }}>{confirmAction.title}</h3>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <button className="btn btn-danger" onClick={() => {
+          confirmAction.onConfirm();
+          setConfirmAction({ ...confirmAction, isOpen: false });
+        }}>
+          Sí, eliminar
+        </button>
+        <button className="btn btn-primary" onClick={() => setConfirmAction({ ...confirmAction, isOpen: false })}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+    </div>
     </div>
   );
 };

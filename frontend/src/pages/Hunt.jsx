@@ -1,45 +1,49 @@
 import { useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify'; // Importamos toast
 
 const Hunt = () => {
   const { slug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Recuperamos datos
   const gameName = location.state?.gameName || slug;
   const gameGen = location.state?.gen || 9;
 
-  // --- CONFIGURACIÓN DE COLORES Y LÍMITES POR GENERACIÓN --- //
-  
-  // 1. Diccionario de Fondos (Tus colores)
+  // --- CONFIGURACIÓN DE COLORES Y LÍMITES ---
   const genGradients = {
-    2: 'linear-gradient(135deg, #BD932F, #B7B7B7)', // Oro -> Plata
-    3: 'linear-gradient(135deg, #0044C3, #AA2447)', // Zafiro -> Rubí
-    4: 'linear-gradient(135deg, #6FB4C3, #895389)', // Diamante -> Perla
-    5: 'linear-gradient(135deg, #000000, #FFFFFF)', // Negro -> Blanco
-    6: 'linear-gradient(135deg, #C94242, #45A2D6)', // Y (Rojo) -> X (Azul)
-    7: 'linear-gradient(135deg, #E8914D, #3B7BF5)', // Sol -> Luna
-    8: 'linear-gradient(135deg, #33DDF5, #E84682)', // Espada -> Escudo
-    9: 'linear-gradient(135deg, #FF0000, #AE00FF)', // Escarlata -> Púrpura
+    2: 'linear-gradient(135deg, #BD932F, #B7B7B7)',
+    3: 'linear-gradient(135deg, #0044C3, #AA2447)',
+    4: 'linear-gradient(135deg, #6FB4C3, #895389)',
+    5: 'linear-gradient(135deg, #000000, #FFFFFF)',
+    6: 'linear-gradient(135deg, #C94242, #45A2D6)',
+    7: 'linear-gradient(135deg, #E8914D, #3B7BF5)',
+    8: 'linear-gradient(135deg, #33DDF5, #E84682)',
+    9: 'linear-gradient(135deg, #FF0000, #AE00FF)',
   };
 
-  // 2. Diccionario de Límite de Pokédex
   const maxDexIds = {
     1: 151, 2: 251, 3: 386, 4: 493, 
     5: 649, 6: 721, 7: 809, 8: 905, 9: 1025
   };
 
-  // Seleccionamos el fondo actual (o uno oscuro por defecto si falla)
   const currentBackground = genGradients[gameGen] || 'var(--bg-main)';
 
-  // --- ESTADOS Y LÓGICA --- //
+  // --- ESTADOS ---
   const [pokemonName, setPokemonName] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [encounters, setEncounters] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
+  // ESTADO PARA MODAL DE CONFIRMACIÓN (Igual que en Biblioteca)
+  const [confirmAction, setConfirmAction] = useState({ 
+    isOpen: false, 
+    title: "", 
+    onConfirm: null 
+  });
+
+  // --- LÓGICA DE BÚSQUEDA ---
   const searchPokemon = async (query) => {
     setPokemonName(query);
     if (query.length < 2) {
@@ -78,40 +82,33 @@ const Hunt = () => {
 
   const handleIncrement = () => setEncounters(prev => prev + 1);
   
+  // --- GUARDAR CON TOAST ---
   const handleSave = async () => {
     if (!selectedPokemon) return;
     
-    // 1. Recuperar usuario con seguridad
     const userString = localStorage.getItem('USUARIO_ACTIVO');
     if (!userString) {
-      alert("Error: No hay sesión activa. Vuelve a hacer login.");
+      toast.error("Sesión expirada. Por favor, inicia sesión.");
       return;
     }
     const user = JSON.parse(userString);
-    
-    // 2. OBTENER ID (CORRECCIÓN IMPORTANTE)
-    // Añadimos 'user.id' que faltaba
     const userId = user.Id || user.id || user._id;
 
     if (!userId) {
-      alert("Error: No se encontró el ID del usuario.");
-      console.error("Usuario sin ID válido:", user);
+      toast.error("ID de usuario no encontrado.");
       return;
     }
 
     setIsSaving(true);
     
     const shinyData = {
-      userId: userId, // Ahora seguro que no es undefined
+      userId,
       pokemonName: selectedPokemon.name,
       game: gameName,
       attempts: encounters,
       sprite: selectedPokemon.sprite,
       date: new Date()
     };
-
-    // DEBUG: Mira la consola del navegador si falla
-    console.log("Enviando Shiny:", shinyData); 
 
     try {
       const response = await fetch('http://localhost:5000/api/shiny/add', {
@@ -120,29 +117,36 @@ const Hunt = () => {
         body: JSON.stringify(shinyData)
       });
 
-      const result = await response.json();
-
       if (response.ok) {
-        alert("¡Shiny registrado correctamente!");
+        toast.success(`✨ ¡${selectedPokemon.name.toUpperCase()} capturado y guardado!`);
         navigate('/biblioteca');
       } else {
-        // Muestra el error que devuelve el backend
-        alert(`Error al guardar: ${result.message || 'Error desconocido'}`);
-        console.error("Error del servidor:", result);
+        const result = await response.json();
+        toast.error(`Error: ${result.message || 'No se pudo guardar'}`);
       }
     } catch (error) {
-      console.error("Error de red:", error);
-      alert("Error de conexión con el servidor");
+      toast.error("Error de conexión con el servidor");
     } finally {
       setIsSaving(false);
     }
   };
 
+  // --- CANCELAR CON MODAL PERSONALIZADO ---
+  const handleCancelHunt = () => {
+    setConfirmAction({
+      isOpen: true,
+      title: `¿Seguro que quieres abandonar la caza de ${selectedPokemon.name}?`,
+      onConfirm: () => {
+        setSelectedPokemon(null);
+        setEncounters(0);
+        toast.info("Caza cancelada");
+      }
+    });
+  };
+
   return (
-    // AQUI APLICAMOS EL FONDO DINÁMICO
     <div className="app-container" style={{ background: currentBackground, minHeight: '100vh', transition: 'background 0.5s ease' }}>
       
-      {/* Botón Volver con sombra para que se lea bien en fondos claros (Gen 5) */}
       <div style={{ textAlign: 'left', marginBottom: '20px', padding: '20px' }}>
         <Link to="/" className="btn btn-back" style={{ 
           fontSize: '1.1rem', 
@@ -150,14 +154,13 @@ const Hunt = () => {
           backdropFilter: 'blur(5px)',
           border: '1px solid rgba(255,255,255,0.2)' 
         }}>
-          ← Cancelar Caza
+          ← Volver a Inicio
         </Link>
       </div>
 
       <div className="hunt-centered">
         {!selectedPokemon ? (
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Título con sombra para legibilidad */}
             <h1 className="title-main" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
               ¿Qué estás cazando?
             </h1>
@@ -188,19 +191,19 @@ const Hunt = () => {
         ) : (
           <div className="counter-box">
             <img src={selectedPokemon.sprite} alt={selectedPokemon.name} className="shiny-target-img"/>
-            <h2 className="pokemon-name">{selectedPokemon.name}</h2>
+            <h2 className="pokemon-name" style={{textTransform: 'capitalize'}}>{selectedPokemon.name}</h2>
             <div className="counter-number">{encounters}</div>
             <div className="counter-label">Intentos Totales</div>
 
             <div className="action-buttons">
-              <button className="btn btn-primary" style={{ fontSize: '1.2rem', padding: '15px' }} onClick={handleIncrement}>
+              <button className="btn btn-primary" style={{ fontSize: '1.2rem', padding: '15px', width: '100%' }} onClick={handleIncrement}>
                 +1 Encuentro
               </button>
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button className="btn" style={{ flex: 1, background: '#2d3436', color: 'white' }} onClick={handleSave} disabled={isSaving}>
                   {isSaving ? 'Guardando...' : '💾 Guardar'}
                 </button>
-                <button className="btn btn-danger" onClick={() => { if(window.confirm("¿Cancelar caza actual?")) setSelectedPokemon(null); setEncounters(0); }}>
+                <button className="btn btn-danger" onClick={handleCancelHunt}>
                   ×
                 </button>
               </div>
@@ -208,6 +211,27 @@ const Hunt = () => {
           </div>
         )}
       </div>
+
+      {/* MODAL DE CONFIRMACIÓN PERSONALIZADO (Mismo que en Biblioteca) */}
+      {confirmAction.isOpen && (
+        <div className="modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="modal-content" style={{ textAlign: 'center', maxWidth: '350px', borderLeft: '5px solid #ffcb05', borderRight: '5px solid #ffcb05' }}>
+            <h3 style={{ marginBottom: '10px', color: '#ffcb05' }}>Confirmar</h3>
+            <p style={{ marginBottom: '25px', color: '#FFFFFF', fontSize: '1.1rem' }}>{confirmAction.title}</p>
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button className="btn btn-danger" onClick={() => {
+                confirmAction.onConfirm();
+                setConfirmAction({ ...confirmAction, isOpen: false });
+              }}>
+                Sí, cancelar
+              </button>
+              <button className="btn btn-primary" onClick={() => setConfirmAction({ ...confirmAction, isOpen: false })}>
+                Continuar Caza
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
