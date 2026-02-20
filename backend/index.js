@@ -1,18 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // <--- IMPORTANTE: El portero
+const cors = require('cors');
 require('dotenv').config();
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
-const shinyRoutes = require('./routes/shinyRoutes'); // <--- Tu nueva ruta
+const shinyRoutes = require('./routes/shinyRoutes'); 
 const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
 
 // --- MIDDLEWARES (Configuraciones) ---
-app.use(cors()); // <--- ¡Abre las puertas a React!
-app.use(express.json()); // Permite leer JSON
+app.use(cors()); 
+app.use(express.json()); 
 
 // --- RUTAS ---
 app.use('/api/auth', authRoutes);

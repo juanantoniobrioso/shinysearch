@@ -84,7 +84,7 @@ const Home = () => {
     <div className="app-container">
       {/* HEADER */}
       <header className="header-bar">
-        {/* AQUÍ ESTÁ EL ARREGLO DEL NOMBRE (username en minúscula) */}
+        {}
         <h3>Entrenador <span className="username-highlight">{user?.username || user?.Username}</span></h3>
         <button onClick={handleLogout} className="btn-custom btn-poke-red">
           Cerrar Sesión

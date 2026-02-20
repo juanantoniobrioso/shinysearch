@@ -64,7 +64,7 @@ const handleDelete = (shiny) => {
 
   setConfirmAction({
     isOpen: true,
-    title: `¿Liberar a ${formattedName}?`, // Ahora saldrá "Charmeleon"
+    title: `¿Liberar a ${formattedName}?`,
     onConfirm: async () => {
       try {
         const response = await fetch(`http://localhost:5000/api/shiny/delete/${shiny._id}`, { 
@@ -228,7 +228,7 @@ const handleDelete = (shiny) => {
                 ×
               </button>
 
-              {/* BOTÓN EDITAR (LÁPIZ) - NUEVO */}
+              {/* BOTÓN EDITAR (LÁPIZ)*/}
               <button 
                 className="btn-circle btn-edit"
                 onClick={() => openEditModal(shiny)}
@@ -256,7 +256,7 @@ const handleDelete = (shiny) => {
               
               {/*---Boton añadir notas */}
               <button 
-                className="btn-custom btn-poke-blue" // Botón normal, no circular
+                className="btn-custom btn-poke-blue" 
                 style={{ width: '100%', marginTop: '10px', fontSize: '0.8rem' }}
                 onClick={() => openNoteModal(shiny)}
                 title="Ver notas"
@@ -347,7 +347,7 @@ const handleDelete = (shiny) => {
   </div>
 )}
 
-      {/* --- MODAL DE EDICIÓN (NUEVO) --- */}
+      {/* --- MODAL DE EDICIÓN --- */}
       {editingShiny && (
         
         <div className="modal-overlay">
@@ -378,9 +378,9 @@ const handleDelete = (shiny) => {
             />
 
             <label>Juego:</label>
-            {/* CAMBIO: Usamos SELECT en vez de INPUT */}
+            {}
             <select 
-              className="search-input" // Reusamos la clase para que se vea igual
+              className="search-input" 
               style={{ marginBottom: '20px', cursor: 'pointer' }}
               value={editForm.game}
               onChange={(e) => setEditForm({...editForm, game: e.target.value})}

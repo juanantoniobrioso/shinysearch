@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Importamos toast
+import { toast } from 'react-toastify'; 
 
 const Hunt = () => {
   const { slug } = useParams();
@@ -36,7 +36,7 @@ const Hunt = () => {
   const [encounters, setEncounters] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  // ESTADO PARA MODAL DE CONFIRMACIÓN (Igual que en Biblioteca)
+  // ESTADO PARA MODAL DE CONFIRMACIÓN 
   const [confirmAction, setConfirmAction] = useState({ 
     isOpen: false, 
     title: "", 
@@ -212,7 +212,7 @@ const Hunt = () => {
         )}
       </div>
 
-      {/* MODAL DE CONFIRMACIÓN PERSONALIZADO (Mismo que en Biblioteca) */}
+      {/* MODAL DE CONFIRMACIÓN PERSONALIZADO */}
       {confirmAction.isOpen && (
         <div className="modal-overlay" style={{ zIndex: 10000 }}>
           <div className="modal-content" style={{ textAlign: 'center', maxWidth: '350px', borderLeft: '5px solid #ffcb05', borderRight: '5px solid #ffcb05' }}>

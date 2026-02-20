@@ -11,7 +11,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false); // Para mostrar "Cargando..."
 
-  // La dirección de tu servidor (Backend)
+  // La dirección del servidor
   const API_URL = 'http://localhost:5000/api/auth';
 
   const handleSubmit = async (e) => {
@@ -26,7 +26,7 @@ const Login = () => {
       return;
     }
 
-    // Decidimos a qué ruta llamar: ¿Login o Register?
+    // Decidimos si llamar a login o register
     const endpoint = isRegistering ? '/register' : '/login';
 
     try {
@@ -46,14 +46,13 @@ const Login = () => {
         console.log('Éxito:', data);
 
         // Guardamos al usuario en el navegador para recordar que está logueado
-        // (En el futuro usaremos Tokens, pero esto sirve por ahora)
         localStorage.setItem('USUARIO_ACTIVO', JSON.stringify(data.user || { username })); 
         
         // Redirigimos a la Pokédex
         navigate('/');
       } else {
         // --- SI HUBO ERROR (Status 400/500) ---
-        // Mostramos el mensaje que nos mandó el servidor (ej: "Contraseña incorrecta")
+        // Mostramos el mensaje que nos mandó el servidor
         setError(data.message || 'Ocurrió un error inesperado.');
       }
 

@@ -14,12 +14,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/hunt/:gameId" element={<Hunt />} />
-        
-        {/* Aquí definimos que la URL es /biblioteca */}
         <Route path="/biblioteca" element={<Biblioteca />} />
       </Routes>
       <div className="App">
-      {/* Tus rutas y componentes */}
       <ToastContainer 
         position="bottom-right" 
         autoClose={3000} 
